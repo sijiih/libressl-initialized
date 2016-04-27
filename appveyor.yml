@@ -1,0 +1,97 @@
+version: 1.0.{build}
+clone_folder: c:\libressl
+init:
+- ps: iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+install:
+- cmd: >-
+    wmic os get osarchitecture
+
+    choco install cmake -y
+
+    choco install git -y
+
+    choco install unzip -y
+build_script:
+- cmd: >-
+    git clone https://github.com/sijiih/libressl-initialized.git src
+
+    cd src
+
+    unzip portable-master.zip
+
+    cd ..
+
+    call "%VS140COMNTOOLS%\..\..\vc\vcvarsall.bat" x86
+
+    mkdir build-2015-x86
+
+    cd build-2015-x86
+
+    cmake -G "Visual Studio 14" ..\src\portable-master
+
+    msbuild /t:Rebuild /p:Configuration=Release /p:Platform=Win32 LibreSSL.sln
+
+    mkdir c:\libressl\artifacts\x86
+
+
+    xcopy crypto\Release\crypto.lib c:\libressl\artifacts\x86\ /e/i/y
+
+    xcopy ssl\Release\ssl.lib c:\libressl\artifacts\x86\ /e/i/y
+
+    xcopy tls\Release\tls.lib c:\libressl\artifacts\x86\ /e/i/y
+
+    xcopy apps\openssl\Release\openssl.exe c:\libressl\artifacts\x86\ /e/i/y
+
+
+    dir c:\libressl\artifacts\x86\
+
+    cd ..
+
+    call "%VS140COMNTOOLS%\..\..\vc\vcvarsall.bat" x64
+
+    mkdir build-2015-x64
+
+    cd build-2015-x64
+
+    cmake -G "Visual Studio 14 2015 Win64" ..\src\portable-master
+
+    msbuild /t:Rebuild /p:Configuration=Release /p:Platform=x64 LibreSSL.sln
+
+    mkdir c:\libressl\artifacts\x64
+
+
+    xcopy crypto\Release\crypto.lib c:\libressl\artifacts\x64\ /e/i/y
+
+    xcopy ssl\Release\ssl.lib c:\libressl\artifacts\x64\ /e/i/y
+
+    xcopy tls\Release\tls.lib c:\libressl\artifacts\x64\ /e/i/y
+
+    xcopy apps\openssl\Release\openssl.exe c:\libressl\artifacts\x64\ /e/i/y
+
+
+    xcopy c:\libressl\src\portable-master\include\openssl\*.h c:\libressl\artifacts\include\openssl /e/i/y
+
+    xcopy c:\libressl\src\portable-master\include\tls.h c:\libressl\artifacts\include /e/i/y
+
+    xcopy c:\libressl\src\portable-master\include\pqueue.h c:\libressl\artifacts\include /e/i/y
+
+
+    rmdir c:\libressl\artifacts\include\compat /s/q
+
+
+    dir c:\libressl\artifacts\include\
+
+    dir c:\libressl\artifacts\x86\
+
+    dir c:\libressl\artifacts\x64\
+
+
+    cd c:\libressl
+
+    7z a libressl-static-msvc2015.zip c:\libressl\artifacts\*
+
+
+    dir
+artifacts:
+- path: libressl-static-msvc2015.zip
+  name: static-msvc2015

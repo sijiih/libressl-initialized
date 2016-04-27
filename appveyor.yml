@@ -13,7 +13,9 @@ install:
     choco install unzip -y
 build_script:
 - cmd: >-
-    git clone https://github.com/sijiih/libressl-initialized.git src
+    mkdir src
+
+    mv portable-master.zip src/portable-master.zip
 
     cd src
 
